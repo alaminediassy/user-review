@@ -6,6 +6,9 @@ import com.nema.user_reviews.entities.Validation;
 import com.nema.user_reviews.enums.RoleType;
 import com.nema.user_reviews.repository.AppUserRepository;
 import lombok.AllArgsConstructor;
+import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.core.userdetails.UserDetailsService;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -15,7 +18,7 @@ import java.util.Optional;
 
 @AllArgsConstructor
 @Service
-public class AppUserService {
+public class AppUserService implements UserDetailsService {
     private AppUserRepository appUserRepository;
     private BCryptPasswordEncoder bCryptPasswordEncoder;
     private ValidationService validationService;
@@ -53,5 +56,12 @@ public class AppUserService {
                 new RuntimeException("Utilisateur inconnu"));
         appUserActivate.setEnabled(true);
         this.appUserRepository.save(appUserActivate);
+    }
+
+    @Override
+    public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
+        return this.appUserRepository
+                .findByEmail(username)
+                .orElseThrow(() -> new UsernameNotFoundException("User not found"));
     }
 }
